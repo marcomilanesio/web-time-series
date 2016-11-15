@@ -41,16 +41,18 @@ if __name__ == "__main__":
     expire_time = 60 * 60 * 24 * 2  # 2 days
     datafile = 'hillary_clinton.json'
     if not os.path.isfile(datafile) or time.time() - os.stat(datafile).st_mtime > expire_time:
-            q = """ SELECT DISTINCT * WHERE
+        print("Query")
+        q = """ SELECT DISTINCT * WHERE
             {
               <http://fr.wikipedia.org/wiki/Hillary_Clinton> ?p ?v .
               OPTIONAL {?v ?p2 ?v2}
             }
             ORDER BY ?v
             """
-            url = "http://dbpedia-historique.inria.fr/sparql"
-            res = execute_query(url, q, datafile)
+        url = "http://dbpedia-historique.inria.fr/sparql"
+        res = execute_query(url, q, datafile)
     else:
+        print("Local")
         with open(datafile) as infile:
             res = json.load(infile)
 
@@ -68,6 +70,6 @@ if __name__ == "__main__":
 
     rev = extract(rev_per_month)
     size = extract(size_per_month)
-
-    print(size)
-
+    print(len([k for k in rev.keys() if k not in size.keys()]))
+    print('--')
+    print(len([k for k in size.keys() if k not in rev.keys()]))
