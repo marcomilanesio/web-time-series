@@ -2,6 +2,8 @@ from sparqlclient import SparqlClient
 import re
 import pandas as pd
 import json
+from ts import TS
+
 
 def convert_date(datestring, month=False):
     if month:
@@ -76,6 +78,7 @@ if __name__ == "__main__":
 
     if len(res.keys()) == 0:
         exit("Problems loading data")
+    print(len(res))
 
     p_keys = {}
     for el in res['results']['bindings']:
@@ -87,6 +90,11 @@ if __name__ == "__main__":
 
     df = create_dataframe(p_keys)
     print(df.head())
+    ts_num = TS('num', df.num)
+    print("ts_num is Stationary: {}".format(ts_num.is_stationary()))
+    ts_size = TS('size', df.size)
+    print("ts_size is Stationary: {}".format(ts_size.is_stationary()))
+
 
 
 
