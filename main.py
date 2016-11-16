@@ -35,6 +35,24 @@ def execute_query(url, q, fname):
         json.dump(res, outfile)
     return res
 
+
+def create_dataframe(dic):
+    # regex_keys = ['revPerMonth', 'averageSizePerMonth']
+    rev_per_month = [v for k, v in dic.items() if re.search('revPerMonth', k)][0]
+    size_per_month = [v for k, v in dic.items() if re.search('averageSizePerMonth', k)][0]
+
+    rev = extract(rev_per_month)
+    size = extract(size_per_month)
+
+    n_rev = dict((v[1], {'num': v[0], 'nodeId_n': k}) for k, v in rev.items())
+    n_size = dict((v[1], {'size': v[0], 'nodeId_s': k}) for k, v in size.items())
+
+    df_rev = pd.DataFrame.from_dict(n_rev, orient='index')
+    df_size = pd.DataFrame.from_dict(n_size, orient='index')
+
+    return pd.concat([df_rev, df_size], axis=1)
+
+
 if __name__ == "__main__":
     import os
     import time
@@ -56,6 +74,9 @@ if __name__ == "__main__":
         with open(datafile) as infile:
             res = json.load(infile)
 
+    if len(res.keys()) == 0:
+        exit("Problems loading data")
+
     p_keys = {}
     for el in res['results']['bindings']:
         p_key = el['p']['value']
@@ -64,12 +85,8 @@ if __name__ == "__main__":
         else:
             p_keys[p_key].append(el)
 
-    regex_keys = ['revPerMonth', 'averageSizePerMonth']
-    rev_per_month = [v for k, v in p_keys.items() if re.search('revPerMonth', k)][0]
-    size_per_month = [v for k, v in p_keys.items() if re.search('averageSizePerMonth', k)][0]
+    df = create_dataframe(p_keys)
+    print(df.head())
 
-    rev = extract(rev_per_month)
-    size = extract(size_per_month)
-    print(len([k for k in rev.keys() if k not in size.keys()]))
-    print('--')
-    print(len([k for k in size.keys() if k not in rev.keys()]))
+
+
