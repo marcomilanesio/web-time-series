@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.stattools import adfuller, acf, pacf
+import statsmodels.tsa.api as smt
+import seaborn as sns
+sns.set(style='ticks', context='talk')
 
 
 def adf(ts, window=7, fname=None, disp=None):
@@ -48,3 +51,46 @@ def differentiate(ts):
 def log_transform(ts):
     return np.log(ts)
 
+
+def find_acf_pacf(ts, nlags=12, fname=None):
+    lag_acf = acf(ts, nlags=nlags)
+    lag_pacf = pacf(ts, nlags=nlags, method='ols')
+    #Plot ACF:
+    plt.subplot(121)
+    plt.plot(lag_acf)
+    plt.axhline(y=0, linestyle='--', color='gray')
+    plt.axhline(y=-1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
+    plt.axhline(y=1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
+    plt.title('Autocorrelation Function')
+    #Plot PACF:
+    plt.subplot(122)
+    plt.plot(lag_pacf)
+    plt.axhline(y=0, linestyle='--', color='gray')
+    plt.axhline(y=-1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
+    plt.axhline(y=1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
+    plt.title('Partial Autocorrelation Function')
+    plt.tight_layout()
+    if fname:
+        plt.savefig(fname)
+    plt.close()
+    return lag_acf, lag_pacf
+
+
+def autocorrelation(y, fname=None, lags=None, figsize=(10, 8)):
+    fig = plt.figure(figsize=figsize)
+    layout = (2, 2)
+    ts_ax = plt.subplot2grid(layout, (0, 0), colspan=2)
+    acf_ax = plt.subplot2grid(layout, (1, 0))
+    pacf_ax = plt.subplot2grid(layout, (1, 1))
+
+    y.plot(ax=ts_ax)
+
+    smt.graphics.plot_acf(y, lags=lags, ax=acf_ax)
+    smt.graphics.plot_pacf(y, lags=lags, ax=pacf_ax)
+    [ax.set_xlim(1.5) for ax in [acf_ax, pacf_ax]]
+    sns.despine()
+    plt.tight_layout()
+    if fname:
+        plt.savefig(fname)
+    plt.close()
+    return acf_ax, pacf_ax

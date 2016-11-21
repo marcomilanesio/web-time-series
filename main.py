@@ -62,10 +62,15 @@ def analyze(df, keys):
         print("Stationarity {}: {}".format(k,
                                            adftest[1] < 0.5 and any([v > adftest[0] for k, v in adftest[4].items()])))
         print("max value at {}:  {}".format(df[k].idxmax(), df[k].loc[df[k].idxmax()]))
+        if not analysis.is_stationary(ts):
+            ts_diff = analysis.differentiate(ts)
+            print("Differenced {}: {}".format(k, analysis.is_stationary(ts_diff)))
+            acf, pacf = analysis.find_acf_pacf(ts_diff, fname=os.path.join(resultdir, "acf_pacf_diff_{}.png".format(k)))
+            print(acf)
 
 if __name__ == "__main__":
     import time
-    expire_time = 60 * 60 * 24 * 2  # 2 days
+    expire_time = 60 * 60 * 24 * 7  # 7 days
     datafile = 'hillary_clinton.json'
     if not os.path.isfile(datafile) or time.time() - os.stat(datafile).st_mtime > expire_time:
         print("Querying URL")
