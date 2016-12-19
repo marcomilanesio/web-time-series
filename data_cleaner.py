@@ -12,7 +12,6 @@ class DataCleaner:
     def __init__(self, data, person):
         self.data = data
         self.person_page = PersonPage(person)
-        self.df = None
 
     def _convert_date(self, datestring, month=False):
         if month:
@@ -40,7 +39,6 @@ class DataCleaner:
     def _extract(self):
         nodeid_dic = {}
         self.get_secondary_keys()
-        exit()
         for dic in self.data:       # first, from data to {nodeid: [num, timestamp]}
             for k, v in dic.items():
                 if re.search('revPerMonth', v['value']):
@@ -78,7 +76,8 @@ class DataCleaner:
 
     def create_dataframe(self):
         dic = self._extract()
-        self.df = pd.DataFrame.from_dict(dic, orient='index')
+        # self.df = pd.DataFrame.from_dict(dic, orient='index')
+        self.person_page.add_dataframe(pd.DataFrame.from_dict(dic, orient='index'))
 
 
 if __name__ == "__main__":

@@ -19,6 +19,9 @@ class PersonPage:
     def add_unique_contributors(self, num):
         self.unique_contributors = num
 
+    def add_dataframe(self, df):
+        self.df = df
+
     def __str__(self):
         s = self.name
         s += "\nbirth: {}".format(self.birth_date)
