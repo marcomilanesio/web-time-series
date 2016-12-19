@@ -1,6 +1,6 @@
 class PersonPage:
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, person):
+        self.name = person
         self.df = None
         self.important_dates = []
         self.birth_date = None
@@ -24,7 +24,5 @@ class PersonPage:
 
     def __str__(self):
         s = self.name
-        s += "\nbirth: {}".format(self.birth_date)
-        s += "\ndeath: {}".format(self.death_date)
-        s += "\nunique: {}".format(self.unique_contributors)
+        s += "\nlen ts: {}".format(len(self.df))
         return s

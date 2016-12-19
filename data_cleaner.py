@@ -34,7 +34,6 @@ class DataCleaner:
 
             if re.search('uniqueContributorNb', dic['p']['value']):
                 self.person_page.add_unique_contributors(int(dic['v']['value']))
-        print(self.person_page)
 
     def _extract(self):
         nodeid_dic = {}
@@ -82,6 +81,8 @@ class DataCleaner:
 
 if __name__ == "__main__":
     from sparql_client import SparqlClient
+    from mongodb_client import DB
+
     s = SparqlClient()
     people = s.get_all_people()
     print("Fetched {} people".format(len(people)))
@@ -91,4 +92,7 @@ if __name__ == "__main__":
 
     d = DataCleaner(data, person)
     d.create_dataframe()
+
+    db = DB()
+    db.insert_person(d.person_page.__dict__)
 
