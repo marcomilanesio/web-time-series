@@ -1,13 +1,17 @@
 from collections import defaultdict
 import re
 import pandas as pd
+from person_page import PersonPage
 
 regex_keys = ['revPerMonth', 'averageSizePerMonth']
 
+other_keys = ['uniqueContributorNb', 'birthDate', 'deathDate', 'jusqu\'auFonction']
+
 
 class DataCleaner:
-    def __init__(self, data):
+    def __init__(self, data, person):
         self.data = data
+        self.person_page = PersonPage(person)
         self.df = None
 
     def _convert_date(self, datestring, month=False):
@@ -16,8 +20,27 @@ class DataCleaner:
         else:
             return pd.to_datetime(datestring, format="%Y")
 
+    def _convert_complete_date(self, datestring):
+        return pd.to_datetime(datestring.split("+")[0], format="%Y-%m-%d")
+
+    def get_secondary_keys(self):
+        for dic in self.data:
+            if 'p2' in dic:
+                if re.search('birthDate', dic['p2']['value']):
+                    self.person_page.add_birth_date(self._convert_complete_date(dic['v2']['value']))
+                if re.search('deathDate', dic['p2']['value']):
+                    self.person_page.add_death_date(self._convert_complete_date(dic['v2']['value']))
+                if re.search('Fonction', dic['p2']['value']):
+                    self.person_page.add_important_date(self._convert_complete_date(dic['v2']['value']))
+
+            if re.search('uniqueContributorNb', dic['p']['value']):
+                self.person_page.add_unique_contributors(int(dic['v']['value']))
+        print(self.person_page)
+
     def _extract(self):
         nodeid_dic = {}
+        self.get_secondary_keys()
+        exit()
         for dic in self.data:       # first, from data to {nodeid: [num, timestamp]}
             for k, v in dic.items():
                 if re.search('revPerMonth', v['value']):
@@ -58,8 +81,6 @@ class DataCleaner:
         self.df = pd.DataFrame.from_dict(dic, orient='index')
 
 
-
-
 if __name__ == "__main__":
     from sparql_client import SparqlClient
     s = SparqlClient()
@@ -69,6 +90,6 @@ if __name__ == "__main__":
     res = s.get_history_per_person(person)
     data = res['results']['bindings']  # List of dictionaries
 
-    d = DataCleaner(data)
+    d = DataCleaner(data, person)
     d.create_dataframe()
 
