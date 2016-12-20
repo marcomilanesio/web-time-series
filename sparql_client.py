@@ -8,7 +8,6 @@ query_all_person = """
     SELECT DISTINCT * WHERE {
         ?person a dbpedia-owl:Person
     }
-    LIMIT 1
     """
 
 query_history = "SELECT DISTINCT * WHERE {<http://fr.wikipedia.org/wiki/%s> ?p ?v . OPTIONAL {?v ?p2 ?v2} } ORDER BY ?v"

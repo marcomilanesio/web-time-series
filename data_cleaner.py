@@ -20,7 +20,10 @@ class DataCleaner:
             return pd.to_datetime(datestring, format="%Y")
 
     def _convert_complete_date(self, datestring):
-        return pd.to_datetime(datestring.split("+")[0], format="%Y-%m-%d")
+        try:
+            return pd.to_datetime(datestring.split("+")[0], format="%Y-%m-%d", infer_datetime_format=True)
+        except:
+            return datestring.split("+")[0]
 
     def get_secondary_keys(self):
         for dic in self.data:
@@ -64,7 +67,12 @@ class DataCleaner:
                         value = self._convert_date(value_string, month=True)
                         nodeid_dic[nodeid]['month'] = value
 
+        if len(nodeid_dic) == 0:
+            # print("{} page has no information on revPerMonth".format(self.person_page.name))
+            # print("Skipping")
+            return None
         assert [re.match('nodeID', k) for k in nodeid_dic]
+
         time_dic = {}           # second, from {nodeid: [num, timestamp, size]} to {timestamp: {num, size}}
         for _, v in nodeid_dic.items():
             if v['month'] not in time_dic:
@@ -75,8 +83,12 @@ class DataCleaner:
 
     def create_dataframe(self):
         dic = self._extract()
-        # self.df = pd.DataFrame.from_dict(dic, orient='index')
-        self.person_page.add_dataframe(pd.DataFrame.from_dict(dic, orient='index'))
+        if not dic:
+            # print("unable to create dataframe.")
+            self.person_page.add_dataframe(pd.DataFrame.from_dict({}))
+        else:
+            # self.df = pd.DataFrame.from_dict(dic, orient='index')
+            self.person_page.add_dataframe(pd.DataFrame.from_dict(dic, orient='index'))
 
 
 if __name__ == "__main__":
@@ -86,13 +98,15 @@ if __name__ == "__main__":
     s = SparqlClient()
     people = s.get_all_people()
     print("Fetched {} people".format(len(people)))
-    person = people[0]
-    res = s.get_history_per_person(person)
-    data = res['results']['bindings']  # List of dictionaries
-
-    d = DataCleaner(data, person)
-    d.create_dataframe()
-
     db = DB()
-    db.insert_person(d.person_page.__dict__)
+    for person in people:
+        res = s.get_history_per_person(person)
+        data = res['results']['bindings']  # List of dictionaries
+        d = DataCleaner(data, person)
+        d.create_dataframe()
+        if len(d.person_page.df) < 10:
+            print("Insufficient data for [{}]: {}".format(d.person_page.name, len(d.person_page.df)))
+        else:
+            p_id = db.insert_person(d.person_page)
+            print("Inserted data for [{} ({})]: {}".format(d.person_page.name, p_id, len(d.person_page.df)))
 
