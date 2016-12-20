@@ -23,6 +23,9 @@ class PersonPage:
         self.df = df
 
     def __str__(self):
-        s = self.name
-        s += "\nlen ts: {}".format(len(self.df))
+        s = "{} ({}-{})".format(self.name, self.birth_date, self.death_date)
+        if self.df:
+            s += "\nlen ts: {}".format(len(self.df))
+        else:
+            s += " (df empty)"
         return s
