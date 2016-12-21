@@ -1,5 +1,6 @@
 notebooks/.ipynb*
 results/*
+data/*
 .idea*
 __pycache*
 *.json
