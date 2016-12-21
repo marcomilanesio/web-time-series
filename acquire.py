@@ -1,4 +1,3 @@
-from collections import defaultdict
 import re
 import pandas as pd
 from person_page import PersonPage
@@ -94,13 +93,27 @@ class DataCleaner:
 if __name__ == "__main__":
     from sparql_client import SparqlClient
     from mongodb_client import DB
+    import pickle
+    import os
 
     s = SparqlClient()
-    people = s.get_all_people()
-    print("Fetched {} people".format(len(people)))
+    people_file = './data/people.txt'
+    if not os.path.isfile(people_file):
+        people = s.get_all_people()
+        # print("Fetched {} people".format(len(people)))
+        with open(people_file, 'wb') as fp:
+            pickle.dump(people, fp)
+    else:
+        with open(people_file, 'rb') as fp:
+            people = pickle.load(fp)
+        # print("Fetched {} people from file".format(len(people)))
+
     db = DB()
-    for person in people:
+    # TODO 20001
+    for person in people[15001:20000]:
         res = s.get_history_per_person(person)
+        if res is None:
+            continue
         data = res['results']['bindings']  # List of dictionaries
         d = DataCleaner(data, person)
         d.create_dataframe()

@@ -1,7 +1,6 @@
 import pickle
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from person_page import PersonPage
 
 
 class DB:

@@ -1,4 +1,6 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
+from SPARQLWrapper.SPARQLExceptions import EndPointInternalError
+from urllib.error import HTTPError
 
 query_all_person = """
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -18,9 +20,16 @@ class SparqlClient:
         self.sparql = SPARQLWrapper(url)
 
     def get_history_per_person(self, person, format=JSON):
-        self.sparql.setQuery(query_history % person)
-        self.sparql.setReturnFormat(format)
-        return self.sparql.query().convert()
+        try:
+            self.sparql.setQuery(query_history % person)
+            self.sparql.setReturnFormat(format)
+            return self.sparql.query().convert()
+        except HTTPError as e:
+            print("HTTPError {}  ({}) ".format(person, e))
+            return None
+        except EndPointInternalError as e:
+            print("EndpointInternalError {}  ({}) ".format(person, e))
+            return None
 
     def get_all_people(self, format=JSON):
         people = []
