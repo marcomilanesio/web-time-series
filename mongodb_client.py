@@ -1,6 +1,6 @@
 import pickle
 from pymongo import MongoClient
-from bson.binary import Binary
+from bson.objectid import ObjectId
 from person_page import PersonPage
 
 
@@ -12,16 +12,25 @@ class DB:
 
     def insert_person(self, personpage):
         pickled = pickle.dumps(personpage.__dict__)
-        person_page_id = self.persons.insert_one({'bin-data': Binary(pickled)}).inserted_id
+        person_page_id = self.persons.insert_one({'pickled': pickled}).inserted_id
         return person_page_id
 
     def get_all_inserted(self):
-        l = self.persons.distinct('_id')
-        print(l)
+        return self.persons.distinct('_id')
+
+    def get_document(self, object_id):
+        match = self.persons.find_one({"_id": ObjectId(object_id)})
+        pickled = match['pickled']
+        res = pickle.loads(pickled)
+        return res
 
 
 if __name__ == "__main__":
     d = DB()
-    d.get_all_inserted()
+    l = d.get_all_inserted()
+    _id = l[0]
+    doc = d.get_document(_id)
+    print(type(doc['df']))
+
 
 
