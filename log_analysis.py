@@ -11,6 +11,9 @@ def compute_stats(lengths):
     print("Std: {}".format(np.std(lengths)))
     print("Median (50-tile): {}".format(np.percentile(lengths, 50)))   # median.
     print("95-tile: {}".format(np.percentile(lengths, 95)))
+    print("zero-length: {}".format(lengths.count(0)))
+    print("95-length: {}".format(lengths.count(np.percentile(lengths, 95))))
+    print("max-length: {}".format(lengths.count(np.max(lengths))))
 
 
 def plot_distributions(lengths):
