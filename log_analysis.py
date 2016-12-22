@@ -36,7 +36,7 @@ def plot_distributions(lengths):
     plt.close()
 
 if __name__ == "__main__":
-    logfile = 'timeseries_lengths.txt'
+    logfile = 'data/logfile.txt'
     with open(logfile, 'r') as infile:
         arr = infile.readlines()
         lengths = [int(line.split(":")[1]) for line in arr[1:]]
