@@ -28,22 +28,41 @@ def plot_distributions(lengths):
     fig, ax1 = plt.subplots()
     pdf_line = ax1.plot(dist_space, kde(dist_space), 'b+', label="pdf")
     ax1.set_xlabel('length')
-
+    ax1.set_ylabel('P(x)')
     ax2 = ax1.twinx()
     cdf_line = ax2.plot(lengths, cdf, 'r-', label="cdf")
-
+    ax2.set_ylabel('P(x < X)')
     lines = pdf_line + cdf_line
     labels = [l.get_label() for l in lines]
     ax1.legend(lines, labels, loc='best', shadow=True, fancybox=True)
     plt.savefig(figname)
     plt.close()
 
-if __name__ == "__main__":
-    logfile = 'data/logfile.txt'
-    with open(logfile, 'r') as infile:
-        arr = infile.readlines()
-        lengths = [int(line.split(":")[1]) for line in arr[1:]]
-        lengths.sort()
 
-    compute_stats(lengths)
-    plot_distributions(lengths)
+def plot_ratio_rev_contrib():
+    fname = 'data/ratio_rev_contrib.txt'
+    with open(fname, 'r') as infile:
+        arr = infile.readlines()
+    ratios = []
+    for el in arr:
+        ratios.append(float(el.rstrip()[:-1].split(",")[1].strip()))
+    print(np.min(ratios), np.max(ratios), np.mean(ratios), np.std(ratios), np.median(ratios), np.percentile(ratios, 95))
+    ratios.sort()
+    mu = np.mean(ratios)
+    std = np.std(ratios)
+    cdf = stats.norm.cdf(ratios, mu, std)
+    fig = plt.figure()
+    plt.plot(ratios, cdf, 'r-', label="ratio")
+    plt.savefig('results/ratio_rev_contrib.pdf')
+    plt.close()
+
+if __name__ == "__main__":
+    # logfile = 'data/logfile.txt'
+    # with open(logfile, 'r') as infile:
+    #     arr = infile.readlines()
+    #     lengths = [int(line.split(":")[1]) for line in arr[1:]]
+    #     lengths.sort()
+
+    # compute_stats(lengths)
+    # plot_distributions(lengths)
+    plot_ratio_rev_contrib()

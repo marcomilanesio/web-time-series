@@ -109,8 +109,8 @@ if __name__ == "__main__":
         # print("Fetched {} people from file".format(len(people)))
 
     db = DB()
-    # TODO 20001
-    for person in people[15001:20000]:
+    # TODO 98001 > data/logfile.txt
+    for person in people[98001:]:
         res = s.get_history_per_person(person)
         if res is None:
             continue

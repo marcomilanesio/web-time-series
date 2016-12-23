@@ -7,18 +7,18 @@ class DB:
     def __init__(self):
         self.client = MongoClient()
         self.db = self.client.webts
-        self.persons = self.db.persons
+        self.people = self.db.people
 
     def insert_person(self, personpage):
         pickled = pickle.dumps(personpage.__dict__)
-        person_page_id = self.persons.insert_one({'pickled': pickled}).inserted_id
+        person_page_id = self.people.insert_one({'pickled': pickled}).inserted_id
         return person_page_id
 
     def get_all_inserted(self):
-        return self.persons.distinct('_id')
+        return self.people.distinct('_id')
 
     def get_document(self, object_id):
-        match = self.persons.find_one({"_id": ObjectId(object_id)})
+        match = self.people.find_one({"_id": ObjectId(object_id)})
         pickled = match['pickled']
         res = pickle.loads(pickled)
         return res
