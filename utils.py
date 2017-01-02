@@ -7,6 +7,19 @@ import seaborn as sns
 sns.set(style='ticks', context='talk')
 
 
+def plot_ts(ts, title, fname):
+    rolmean = pd.Series.rolling(ts, window=12, center=False).mean()
+    rolstd = pd.Series.rolling(ts, window=12, center=False).std()
+    orig = plt.plot(ts, color='blue', label='Original')
+    mean = plt.plot(rolmean, color='red', label='Rolling Mean')
+    std = plt.plot(rolstd, color='black', label='Rolling Std')
+    plt.legend(loc='best')
+    plt.title(title)
+    # plt.show(block=False)
+    plt.savefig(fname)
+    plt.close()
+
+
 def adf(ts, window=7, fname=None, disp=None):
     # Determing rolling statistics
     rolmean = pd.Series.rolling(ts, window=window, center=False).mean()
