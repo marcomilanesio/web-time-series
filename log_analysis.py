@@ -2,21 +2,27 @@ import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 from scipy.stats.kde import gaussian_kde
+import re
 
 
 def compute_stats(lengths):
-    print("Min: {}".format(np.min(lengths)))
-    print("Max: {}".format(np.max(lengths)))
-    print("Mean: {}".format(np.mean(lengths)))
-    print("Std: {}".format(np.std(lengths)))
-    print("Median (50-tile): {}".format(np.percentile(lengths, 50)))   # median.
-    print("95-tile: {}".format(np.percentile(lengths, 95)))
-    print("zero-length: {}".format(lengths.count(0)))
-    print("95-length: {}".format(lengths.count(np.percentile(lengths, 95))))
-    print("max-length: {}".format(lengths.count(np.max(lengths))))
+    with open('results/stats.txt', 'w') as out:
+        out.write("Min: {}\n".format(np.min(lengths)))
+        out.write("Max: {}".format(np.max(lengths)))
+        out.write("Mean: {}".format(np.mean(lengths)))
+        out.write("Std: {}".format(np.std(lengths)))
+        out.write("Median (50-tile): {}".format(np.percentile(lengths, 50)))   # median.
+        out.write("95-tile: {}".format(np.percentile(lengths, 95)))
+        out.write("zero-length: {}".format(lengths.count(0)))
+        out.write("95-length: {}".format(lengths.count(np.percentile(lengths, 95))))
+        out.write("max-length: {}".format(lengths.count(np.max(lengths))))
 
 
-def plot_distributions(lengths):
+def plot_distributions(logfile):
+    with open(logfile, 'r') as infile:
+        arr = infile.readlines()
+        lengths = [int(line.split(":")[1]) for line in arr[1:]]
+        lengths.sort()
     figname = './results/distributions.pdf'
     mu = np.mean(lengths)
     std = np.std(lengths)
@@ -46,7 +52,7 @@ def plot_ratio_rev_contrib():
     ratios = []
     for el in arr:
         ratios.append(float(el.rstrip()[:-1].split(",")[1].strip()))
-    print(np.min(ratios), np.max(ratios), np.mean(ratios), np.std(ratios), np.median(ratios), np.percentile(ratios, 95))
+    print("rev_contrib: ", np.min(ratios), np.max(ratios), np.mean(ratios), np.std(ratios), np.median(ratios), np.percentile(ratios, 95))
     ratios.sort()
     mu = np.mean(ratios)
     std = np.std(ratios)
@@ -56,8 +62,27 @@ def plot_ratio_rev_contrib():
     plt.savefig('results/ratio_rev_contrib.pdf')
     plt.close()
 
+
+def find_longest_ts(logfile, larger_than=150):
+    with open(logfile, 'r') as infile:
+        arr = infile.readlines()
+    res = {}
+    regexp = re.compile("[a-z0-9]{24}(?=\))")
+    for line in arr[1:]:
+        try:
+            l = int(line.split(":")[1])
+            if l > larger_than:
+                try:
+                    objid = re.search(regexp, line).group(0)
+                    res[objid] = l
+                except AttributeError as e:
+                    exit("Unable to process {} - {}".format(line, e))
+        except ValueError as e:
+            exit("Unable to process {} - {}".format(line, e))
+    return res
+
 if __name__ == "__main__":
-    # logfile = 'data/logfile.txt'
+    logfile = 'data/logfile.txt'
     # with open(logfile, 'r') as infile:
     #     arr = infile.readlines()
     #     lengths = [int(line.split(":")[1]) for line in arr[1:]]
@@ -65,4 +90,5 @@ if __name__ == "__main__":
 
     # compute_stats(lengths)
     # plot_distributions(lengths)
-    plot_ratio_rev_contrib()
+    # plot_ratio_rev_contrib()
+    find_longest_ts(logfile)
