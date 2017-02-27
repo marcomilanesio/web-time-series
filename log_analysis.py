@@ -8,14 +8,14 @@ import re
 def compute_stats(lengths):
     with open('results/stats.txt', 'w') as out:
         out.write("Min: {}\n".format(np.min(lengths)))
-        out.write("Max: {}".format(np.max(lengths)))
-        out.write("Mean: {}".format(np.mean(lengths)))
-        out.write("Std: {}".format(np.std(lengths)))
-        out.write("Median (50-tile): {}".format(np.percentile(lengths, 50)))   # median.
-        out.write("95-tile: {}".format(np.percentile(lengths, 95)))
-        out.write("zero-length: {}".format(lengths.count(0)))
-        out.write("95-length: {}".format(lengths.count(np.percentile(lengths, 95))))
-        out.write("max-length: {}".format(lengths.count(np.max(lengths))))
+        out.write("Max: {}\n".format(np.max(lengths)))
+        out.write("Mean: {}\n".format(np.mean(lengths)))
+        out.write("Std: {}\n".format(np.std(lengths)))
+        out.write("Median (50-tile): {}\n".format(np.percentile(lengths, 50)))   # median.
+        out.write("95-tile: {}\n".format(np.percentile(lengths, 95)))
+        out.write("zero-length: {}\n".format(lengths.count(0)))
+        out.write("95-length: {}\n".format(lengths.count(np.percentile(lengths, 95))))
+        out.write("max-length: {}\n".format(lengths.count(np.max(lengths))))
 
 
 def plot_distributions(logfile):
@@ -23,6 +23,7 @@ def plot_distributions(logfile):
         arr = infile.readlines()
         lengths = [int(line.split(":")[1]) for line in arr[1:]]
         lengths.sort()
+    compute_stats(lengths)
     figname = './results/distributions.pdf'
     mu = np.mean(lengths)
     std = np.std(lengths)
@@ -32,7 +33,7 @@ def plot_distributions(logfile):
     dist_space = np.linspace(min(lengths), max(lengths), 100)
 
     fig, ax1 = plt.subplots()
-    pdf_line = ax1.plot(dist_space, kde(dist_space), 'b+', label="pdf")
+    pdf_line = ax1.plot(dist_space, kde(dist_space), linestyle='dashed', label="pdf")
     ax1.set_xlabel('length')
     ax1.set_ylabel('P(x)')
     ax2 = ax1.twinx()
@@ -89,6 +90,6 @@ if __name__ == "__main__":
     #     lengths.sort()
 
     # compute_stats(lengths)
-    # plot_distributions(lengths)
+    plot_distributions(logfile)
     # plot_ratio_rev_contrib()
-    find_longest_ts(logfile)
+    # find_longest_ts(logfile)

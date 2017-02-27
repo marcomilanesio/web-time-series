@@ -11,8 +11,9 @@ def plot_ts(ts, title, fname):
     rolmean = pd.Series.rolling(ts, window=12, center=False).mean()
     rolstd = pd.Series.rolling(ts, window=12, center=False).std()
     orig = plt.plot(ts, color='blue', label='Original')
-    mean = plt.plot(rolmean, color='red', label='Rolling Mean')
-    std = plt.plot(rolstd, color='black', label='Rolling Std')
+    mean = plt.plot(rolmean, linestyle='dashed', color='red', label='Rolling Mean')
+    std = plt.plot(rolstd, linestyle='dotted', color='black', label='Rolling Std')
+    plt.ylim(ymax=100)
     plt.legend(loc='best')
     plt.title(title)
     # plt.show(block=False)
@@ -20,21 +21,9 @@ def plot_ts(ts, title, fname):
     plt.close()
 
 
-def adf(ts, window=7, fname=None, disp=None):
-    # Determing rolling statistics
-    rolmean = pd.Series.rolling(ts, window=window, center=False).mean()
-    rolstd = pd.Series.rolling(ts, window=window, center=False).std()
-
-    #Plot rolling statistics:
+def adf(ts, fname=None, disp=None):
     if fname:
-        orig = plt.plot(ts, color='blue', label='Original')
-        mean = plt.plot(rolmean, color='red', label='Rolling Mean')
-        std = plt.plot(rolstd, color='black', label='Rolling Std')
-        plt.legend(loc='best')
-        plt.title('Rolling Mean & Standard Deviation')
-        # plt.show(block=False)
-        plt.savefig(fname)
-        plt.close()
+        plot_ts(ts, title='Rolling Mean & Standard Deviation', fname=fname)
     # Calculate ADF factors
     adftest = adfuller(ts, autolag='AIC')
     if disp:
@@ -68,22 +57,32 @@ def log_transform(ts):
 def find_acf_pacf(ts, nlags=12, fname=None):
     lag_acf = acf(ts, nlags=nlags)
     lag_pacf = pacf(ts, nlags=nlags, method='ols')
-    #Plot ACF:
-    plt.subplot(121)
-    plt.plot(lag_acf)
-    plt.axhline(y=0, linestyle='--', color='gray')
-    plt.axhline(y=-1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
-    plt.axhline(y=1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
-    plt.title('Autocorrelation Function')
-    #Plot PACF:
-    plt.subplot(122)
-    plt.plot(lag_pacf)
-    plt.axhline(y=0, linestyle='--', color='gray')
-    plt.axhline(y=-1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
-    plt.axhline(y=1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
-    plt.title('Partial Autocorrelation Function')
-    plt.tight_layout()
     if fname:
+        #Plot ACF:
+        plt.subplot(121)
+        plt.plot(lag_acf)
+        plt.axhline(y=0, linestyle='--', color='gray')
+        plt.axhline(y=-1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
+        plt.axhline(y=1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
+        plt.title('Autocorrelation Function')
+        #Plot PACF:
+        plt.subplot(122)
+        plt.plot(lag_pacf)
+        plt.axhline(y=0, linestyle='--', color='gray')
+        plt.axhline(y=-1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
+        plt.axhline(y=1.96/np.sqrt(len(ts)), linestyle='--',color='gray')
+        plt.title('Partial Autocorrelation Function')
+        plt.tight_layout()
         plt.savefig(fname)
-    plt.close()
+        plt.close()
     return lag_acf, lag_pacf
+
+
+if __name__ == "__main__":
+    from mongodb_client import DB
+    c = DB()
+    id_ = '585bbc0b951c421d18beaf53'
+    doc = c.get_document(id_)
+    df = doc['df']
+    ts = df['num_rev']
+    plot_ts(ts, 'Charles_Bukowski:num_rev', './test.pdf')
